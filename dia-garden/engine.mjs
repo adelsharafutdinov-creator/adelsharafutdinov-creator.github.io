@@ -1,0 +1,32 @@
+export const PATH=[[-40,155],[165,155],[165,345],[460,345],[460,125],[700,125],[700,555],[900,555],[900,405]];
+export const PLOTS=[[80,285],[285,155],[325,440],[470,485],[570,240],[570,410],[800,230],[805,440]];
+export const TYPES={flower:{name:'Цветок',cost:2,range:190,interval:.8,damage:1.2},ice:{name:'Ледяной гриб',cost:3,range:170,interval:1.1,damage:.6},pumpkin:{name:'Тыква',cost:4,range:180,interval:1.8,damage:2.5}};
+const lengths=PATH.slice(1).map((p,i)=>Math.hypot(p[0]-PATH[i][0],p[1]-PATH[i][1]));
+export const PATH_LENGTH=lengths.reduce((a,b)=>a+b,0);
+export function pointAt(distance){let d=Math.max(0,distance);for(let i=0;i<lengths.length;i++){if(d<=lengths[i]){const t=d/lengths[i];return {x:PATH[i][0]+(PATH[i+1][0]-PATH[i][0])*t,y:PATH[i][1]+(PATH[i+1][1]-PATH[i][1])*t};}d-=lengths[i];}return {x:900,y:405};}
+export class Garden{
+ constructor(){this.reset();}
+ reset(){Object.assign(this,{phase:'prepare',wave:0,suns:7,bananas:10,towers:PLOTS.map(()=>null),bugs:[],effects:[],shots:[],spawned:0,total:0,spawnIn:0,helpCooldown:0,castleCooldown:0,time:0,id:0,cleared:0,checkpoint:null,events:[]});}
+ emit(type,data={}){this.events.push({type,...data});}
+ build(plot,type){if(!['prepare','playing'].includes(this.phase)||!Number.isInteger(plot)||!PLOTS[plot]||this.towers[plot]||!TYPES[type]||this.suns<TYPES[type].cost)return false;this.suns-=TYPES[type].cost;this.towers[plot]={type,level:1,cooldown:0};this.emit('build',{plot,type});return true;}
+ upgrade(plot){const t=this.towers[plot];if(!['prepare','playing'].includes(this.phase)||!t||t.level>=3||this.suns<2)return false;this.suns-=2;t.level++;this.emit('upgrade',{plot});return true;}
+ sell(plot){const t=this.towers[plot];if(this.phase!=='prepare'||!t)return false;this.suns+=TYPES[t.type].cost+2*(t.level-1);this.towers[plot]=null;this.emit('sell',{plot});return true;}
+ startWave(){if(this.phase!=='prepare'||this.wave>=10||!this.towers.some(Boolean))return false;this.checkpoint=this.export();this.wave++;this.total=3+Math.floor(this.wave/2);this.spawned=0;this.spawnIn=.7;this.bugs=[];this.phase='playing';this.helpCooldown=0;this.castleCooldown=0;this.emit('wave',{wave:this.wave});return true;}
+ pause(){if(this.phase!=='playing')return false;this.phase='paused';return true;}
+ resume(){if(this.phase!=='paused')return false;this.phase='playing';return true;}
+ get helpReady(){return this.phase==='playing'&&this.helpCooldown===0&&this.bugs.some(b=>b.hp>0&&Math.hypot(b.x-900,b.y-370)<370);}
+ help(){if(!this.helpReady)return false;this.helpCooldown=18;let count=0;for(const bug of this.bugs){if(bug.hp>0&&Math.hypot(bug.x-900,bug.y-370)<370){this.hit(bug,99,'help');count++;}}this.effects.push({kind:'magic',x:900,y:370,life:1.2,total:1.2});this.emit('help',{count});return true;}
+ hit(bug,damage,type){if(bug.hp<=0)return;bug.hp-=damage;if(type==='ice'){bug.slow=2;bug.slowFactor=.45;}if(bug.hp<=0){this.suns++;this.cleared++;this.effects.push({kind:'flee',x:bug.x,y:bug.y,life:.6,total:.6,color:bug.color});this.emit('repelled');}}
+ tick(dt){if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.05);if(this.phase!=='paused'){this.effects=this.effects.filter(e=>(e.life-=dt)>0);this.shots=this.shots.filter(s=>(s.life-=dt)>0);}if(this.phase!=='playing')return;this.time+=dt;this.helpCooldown=Math.max(0,this.helpCooldown-dt);
+ this.spawnIn-=dt;if(this.spawned<this.total&&this.spawnIn<=0){const k=this.spawned++;this.bugs.push({id:++this.id,distance:0,x:-40,y:155,hp:2.7+this.wave*.48,maxHp:2.7+this.wave*.48,speed:46+this.wave*1.5+(k%3)*4,slow:0,slowFactor:1,color:k%3});this.spawnIn=Math.max(1.5,2.4-this.wave*.07);}
+ for(const bug of this.bugs){if(bug.hp<=0)continue;bug.slow=Math.max(0,bug.slow-dt);bug.distance+=bug.speed*(bug.slow>0?bug.slowFactor:1)*dt;Object.assign(bug,pointAt(bug.distance));if(bug.distance>=PATH_LENGTH){bug.hp=0;this.bananas=Math.max(0,this.bananas-1);this.emit('banana');if(this.bananas===0){this.phase='retry';this.emit('retry');break;}}}
+ if(this.phase!=='playing'){this.bugs=this.bugs.filter(b=>b.hp>0);return;}
+ for(let i=0;i<this.towers.length;i++){const t=this.towers[i];if(!t)continue;t.cooldown=Math.max(0,t.cooldown-dt);if(t.cooldown>0)continue;const spec=TYPES[t.type],pos=PLOTS[i],range=spec.range+(t.level-1)*20;const target=this.bugs.filter(b=>b.hp>0&&Math.hypot(b.x-pos[0],b.y-pos[1])<=range).sort((a,b)=>b.distance-a.distance)[0];if(!target)continue;t.cooldown=spec.interval/(1+(t.level-1)*.15);this.shots.push({x:pos[0],y:pos[1],tx:target.x,ty:target.y,life:.18,type:t.type});const damage=spec.damage*(1+(t.level-1)*.6);if(t.type==='pumpkin'){for(const b of this.bugs)if(b.hp>0&&Math.hypot(b.x-target.x,b.y-target.y)<85)this.hit(b,damage,t.type);}else this.hit(target,damage,t.type);}
+ this.castleCooldown=Math.max(0,this.castleCooldown-dt);if(this.castleCooldown===0){const b=this.bugs.find(b=>b.hp>0&&Math.hypot(b.x-900,b.y-370)<180);if(b){this.hit(b,1.8,'castle');this.castleCooldown=1.6;this.shots.push({x:900,y:320,tx:b.x,ty:b.y,life:.2,type:'castle'});}}
+ this.bugs=this.bugs.filter(b=>b.hp>0);if(this.spawned>=this.total&&this.bugs.length===0){this.suns+=3;this.bananas=Math.min(10,this.bananas+2);this.phase=this.wave>=10?'won':'prepare';this.emit(this.phase==='won'?'won':'complete',{wave:this.wave});}
+ }
+ retry(){if(this.phase!=='retry'||!this.checkpoint)return false;const saved=this.checkpoint;this.restore(saved);this.bananas=10;this.startWave();return true;}
+ export(){return {version:1,wave:this.phase==='prepare'||this.phase==='won'?this.wave:Math.max(0,this.wave-1),suns:this.suns,bananas:this.bananas,towers:this.towers.map(t=>t?{type:t.type,level:t.level}:null),cleared:this.cleared};}
+ restore(raw){if(!raw||raw.version!==1||!Number.isInteger(raw.wave)||raw.wave<0||raw.wave>10||!Number.isInteger(raw.suns)||raw.suns<0||raw.suns>10000||!Number.isInteger(raw.bananas)||raw.bananas<1||raw.bananas>10||!Array.isArray(raw.towers)||raw.towers.length!==PLOTS.length)return false;const ts=raw.towers.map(t=>t&&TYPES[t.type]&&Number.isInteger(t.level)&&t.level>=1&&t.level<=3?{type:t.type,level:t.level,cooldown:0}:null);this.reset();this.wave=raw.wave;this.suns=raw.suns;this.bananas=raw.bananas;this.towers=ts;this.cleared=Number.isInteger(raw.cleared)&&raw.cleared>=0?raw.cleared:0;this.phase=raw.wave===10?'won':'prepare';return true;}
+ snapshot(){return {phase:this.phase,wave:this.wave,suns:this.suns,bananas:this.bananas,helpCooldown:this.helpCooldown,bugs:this.bugs.length,towers:this.towers.map(t=>t?{type:t.type,level:t.level}:null),cleared:this.cleared};}
+}
