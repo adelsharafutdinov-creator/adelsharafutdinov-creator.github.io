@@ -16,8 +16,9 @@ let boss=null,enemyShots=[],phase='clouds',bossesDefeated=0;
 let ratClone=null;const ratArt=new Image();ratArt.src='flying-rat.png';
 const bossArt=new Image();bossArt.src='glabomon.png';const vampireArt=new Image();vampireArt.src='vampire.png';const secondBossArt=new Image();secondBossArt.src='second-boss.png';
 const pointers=new Map();
-const pressed=code=>keys.has(code)||[...pointers.values()].includes(code);
-function clearInputs(){keys.clear();pointers.clear();jumpQueued=false;document.querySelectorAll('[data-key]').forEach(b=>b.classList.remove('held'));}
+const joyKeys=new Set();let joyPointer=null,joyUp=false;
+const pressed=code=>joyKeys.has(code)||keys.has(code)||[...pointers.values()].includes(code);
+function clearInputs(){releaseJoystick();keys.clear();pointers.clear();jumpQueued=false;document.querySelectorAll('[data-key]').forEach(b=>b.classList.remove('held'));}
 const hero=new Image();hero.src='hero.png';
 try{best=Number(localStorage.getItem('rayanBest'))||0;}catch{}
 function record(){window.playerProfiles?.record(score);best=Math.max(best,score);try{localStorage.setItem('rayanBest',best);}catch{} }
@@ -172,3 +173,7 @@ function drawScopeHint(){if(weapon!==8||getBowPlatform())return;round(8,H-32,W-1
 function bowPortals(){return wave<6?bowPlatforms().map(p=>({x:p.x+p.w/2-30,y:p.y-275,w:60,h:50})):[];}
 function tryBowPortal(){if(state!=='playing'||!wallet.doubleJump||!player.airJumpUsed||!bowPortals().some(p=>rect(player,p)))return false;const hp=player.hp;enterRotorField();player.hp=hp;player.vx=0;player.vy=0;player.onGround=false;player.airJumpUsed=false;monsters=[];remaining=0;bossesDefeated=Math.max(bossesDefeated,5);clearInputs();beginBoss();notice='Тайный портал перенёс тебя к Клыку Вертуну!';noticeTime=5;hud();return true;}
 function drawBowPortals(){for(const p of bowPortals()){const x=p.x+p.w/2,y=p.y+p.h/2;ctx.save();ctx.translate(x,y);circle(0,0,32,'#94f5ff22');ctx.strokeStyle='#9ff5ff';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,29,24,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#d5b2ff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,22,17,time*2,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#f1e4ff';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText('К КЛЫКУ ВЕРТУНУ',0,-39);ctx.fillText('ДВОЙНОЙ ПРЫЖОК ↑ ↑',0,46);ctx.restore();}}
+
+function releaseJoystick(){const id=joyPointer;joyPointer=null;joyUp=false;joyKeys.clear();const pad=$('joystick');pad.classList.remove('active');$('joystickKnob').style?.setProperty('transform','translate(-50%,-50%)');if(id!==null&&pad.hasPointerCapture?.(id))pad.releasePointerCapture(id);}
+function moveJoystick(e){if(e.pointerId!==joyPointer)return;e.preventDefault();const box=$('joystick').getBoundingClientRect(),radius=box.width*.33;let dx=(e.clientX-box.left-box.width/2)/radius,dy=(e.clientY-box.top-box.height/2)/radius;const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}joyKeys.clear();if(dx<-.28)joyKeys.add('ArrowLeft');if(dx>.28)joyKeys.add('ArrowRight');if(dy>.45)joyKeys.add('ArrowDown');if(dy<-.5&&!joyUp){jumpQueued=true;joyUp=true;}else if(dy>-.2)joyUp=false;$('joystickKnob').style?.setProperty('transform','translate(calc(-50% + '+dx*radius+'px),calc(-50% + '+dy*radius+'px))');}
+const joystick=$('joystick');joystick.onpointerdown=e=>{e.preventDefault();if(state!=='playing'||joyPointer!==null||(e.pointerType==='mouse'&&e.button!==0))return;joyPointer=e.pointerId;joystick.setPointerCapture(e.pointerId);joystick.classList.add('active');moveJoystick(e);};joystick.onpointermove=moveJoystick;joystick.onpointerup=joystick.onpointercancel=joystick.onlostpointercapture=e=>{if(e.pointerId===joyPointer)releaseJoystick();};joystick.oncontextmenu=e=>e.preventDefault();
