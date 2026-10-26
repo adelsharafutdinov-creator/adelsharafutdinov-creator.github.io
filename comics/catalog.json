@@ -1,0 +1,74 @@
+[
+  {
+    "id": "plan-almost",
+    "title": "План сработал. Почти",
+    "path": "/comics/plan-almost/",
+    "asset": "/comics/media/plan-almost-25fe2e32220a.png",
+    "width": 1024,
+    "height": 1536
+  },
+  {
+    "id": "while-you-studied-business",
+    "title": "Пока ты учился бизнесу",
+    "path": "/comics/while-you-studied-business/",
+    "asset": "/comics/media/while-you-studied-business-c0a1eccc1e37.png",
+    "width": 1103,
+    "height": 1426
+  },
+  {
+    "id": "inflatable-business",
+    "title": "Надувной бизнес",
+    "path": "/comics/inflatable-business/",
+    "asset": "/comics/media/inflatable-business-389b8ccc2392.png",
+    "width": 1024,
+    "height": 1536
+  },
+  {
+    "id": "lord-of-the-forest",
+    "title": "Повелитель леса",
+    "path": "/comics/lord-of-the-forest/",
+    "asset": "/comics/media/lord-of-the-forest-ccef188d37e1.png",
+    "width": 1122,
+    "height": 1402
+  },
+  {
+    "id": "forest-wifi",
+    "title": "Wi-Fi в лесу",
+    "path": "/comics/forest-wifi/",
+    "asset": "/comics/media/forest-wifi-e49a60bba12d.png",
+    "width": 1122,
+    "height": 1402
+  },
+  {
+    "id": "kids-lounge",
+    "title": "Детский лаунж",
+    "path": "/comics/kids-lounge/",
+    "asset": "/comics/media/kids-lounge-7a51d60e70a8.png",
+    "width": 1122,
+    "height": 1402
+  },
+  {
+    "id": "family-recipe",
+    "title": "Тайна семейного рецепта",
+    "path": "/comics/family-recipe/",
+    "asset": "/comics/media/family-recipe-3c3d9151e8d8.png",
+    "width": 1122,
+    "height": 1402
+  },
+  {
+    "id": "scientific-approach",
+    "title": "Научный подход",
+    "path": "/comics/scientific-approach/",
+    "asset": "/comics/media/scientific-approach-c87fb08270ae.png",
+    "width": 2400,
+    "height": 1970
+  },
+  {
+    "id": "instruction-to-friendship",
+    "title": "Инструкция к дружбе",
+    "path": "/comics/instruction-to-friendship/",
+    "asset": "/comics/media/instruction-to-friendship-c80fa962f827.png",
+    "width": 2400,
+    "height": 1970
+  }
+]
