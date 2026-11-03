@@ -8,8 +8,9 @@
  let token=storage.get('rayan-player-v1');
  if(!/^[a-f0-9-]{36}$/.test(token||'')){token=uuid();storage.set('rayan-player-v1',token)}
  const incoming=new URLSearchParams(location.search).get('from');
- if(['family','classmates','test'].includes(incoming))storage.set('rayan-source-v1',incoming);
- let source=storage.get('rayan-source-v1')||'direct';
+ if(['family','classmates'].includes(incoming))storage.set('rayan-source-v1',incoming);
+ let source=incoming==='test'?'test':storage.get('rayan-source-v1')||'direct';
+ if(source==='test'&&incoming!=='test')source='direct';
  if(!['direct','family','classmates','test'].includes(source))source='direct';
  let game=null,playing=()=>false,session=uuid(),seconds=0,started=false,lastInput=0,lastTick=performance.now(),previousActive=false,inflight=false,lastSent=-1;
  let vote=null,summary,buttons=[],status,acknowledged=false;
