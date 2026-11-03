@@ -51,3 +51,5 @@ function draw(){const c=$('garden'),r=c.getBoundingClientRect(),dpr=Math.min(dev
 function frame(now){const dt=last?Math.max(0,(now-last)/1000):0;last=now;clock=now/1000;if(!$('welcome').open&&!shopping&&!$('resetDialog').open)game.tick(dt);if(game.events.length)events();else sync();draw();requestAnimationFrame(frame);}
 sync();$('welcome').showModal();requestAnimationFrame(frame);
 if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'read_dia_garden_state',description:'Прочитать волну, башни, запас бананов и готовность помощи Дии.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute:()=>({...game.snapshot(),shopping,storageOK,imageOK})})).catch(()=>{});}catch{}}
+
+window.RayanAnalytics?.register('dia-garden',()=>game.phase==='playing'&&!shopping&&!$('resetDialog').open&&!$('welcome').open);

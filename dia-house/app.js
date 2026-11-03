@@ -42,3 +42,5 @@ document.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>travel(b.datas
 $('gecko').innerHTML=gecko();avatars();updateRewards();$('welcome').showModal();
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&'speechSynthesis'in window)speechSynthesis.cancel();});
 if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'read_dia_house_state',description:'Прочитать комнату, задание, награды и выбранный наряд игры для Дии.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute:()=>({room,mode,task,solved,count,cheeses:state.cheeses,earned:state.earned,outfit:state.outfit,hair:state.hair,progress:state.progress,storageOK,speechSupported:'speechSynthesis'in window})})).catch(()=>{});}catch{}}
+
+window.RayanAnalytics?.register('dia-house',()=>!$('welcome').open&&!$('fridgeDialog').open);

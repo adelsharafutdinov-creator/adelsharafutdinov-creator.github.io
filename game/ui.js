@@ -116,3 +116,5 @@ async function load(){
 }
 if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'read_rayan_game_state',description:'Прочитать результат и состояние текущего забега.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute:()=>({...game.snapshot(),paused,character:selected,characterReady:ready(),coachReady:Boolean(coach)})})).catch(()=>{});}catch{}}
 resize();requestAnimationFrame(tick);load();
+
+window.RayanAnalytics?.register('game',()=>game.mode==='playing'&&!paused);

@@ -37,3 +37,5 @@ $('discard').onclick=()=>{run=null;try{localStorage.removeItem('arena-current-v1
 $('abandon').onclick=choose;$('refresh').onclick=board;$('rulesButton').onclick=()=>{$('rules').open=!$('rules').open;if($('rules').open)$('rules').scrollIntoView({behavior:'smooth'});};
 try{run=JSON.parse(localStorage.getItem('arena-current-v1'));if(!run?.id||!heroes.some(h=>h.id===run.state?.hero))run=null;}catch{}
 choose();board();
+
+window.RayanAnalytics?.register('arena',()=>Boolean(run)&&!$('battle').hidden&&!['won','lost'].includes(run.state.phase));
