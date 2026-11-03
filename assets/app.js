@@ -118,20 +118,8 @@ async function startCloud(){
   }catch{report('Не удалось загрузить общие идеи. Проверьте соединение и обновите страницу.')}
   db.auth.onAuthStateChange(()=>{setTimeout(()=>{void updateAccess()},0)});
 }
-document.getElementById('googleLogin').onclick=async()=>{
-  const button=document.getElementById('googleLogin');button.disabled=true;
-  const status=document.getElementById('googleStatus');
-  try{
-    status.textContent='Открываем Google…';
-    const response=await fetch('https://buitznzbhxuobphaabrv.supabase.co/auth/v1/settings',{headers:{apikey:'sb_publishable_GNuhd_o0Cp1p666IUt2O9Q_RPOciTwK'}});
-    if(!response.ok)throw new Error('settings');
-    const settings=await response.json();
-    if(!settings.external?.google){status.textContent='Вход через Google ещё настраивается. Пока можно войти по ссылке из письма ниже.';button.disabled=false;return}
-    const {error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/',queryParams:{prompt:'select_account'}}});if(error)throw error;
-  }catch{status.textContent='Не удалось открыть вход через Google. Попробуйте ещё раз.';button.disabled=false}
-};
 const loginDialog=document.getElementById('loginDialog');
-document.getElementById('loginBtn').onclick=()=>{loginDialog.showModal();document.getElementById('googleLogin').focus()};
+document.getElementById('loginBtn').onclick=()=>{loginDialog.showModal();document.getElementById('loginEmail').focus()};
 document.getElementById('closeLogin').onclick=()=>loginDialog.close();
 document.getElementById('loginForm').onsubmit=async event=>{
   event.preventDefault();
